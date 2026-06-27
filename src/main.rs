@@ -473,3 +473,4 @@ async fn cmd_seed_design() {
         );
     }
 }
+// ci-trigger
