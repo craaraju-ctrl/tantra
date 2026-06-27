@@ -101,12 +101,11 @@ impl Default for EngLoopConfig {
         Self {
             memory_api_url: std::env::var("MEMORY_API_URL")
                 .unwrap_or_else(|_| "http://localhost:3111".to_string()),
-            project_dir: std::env::var("TANTRA_PROJECT_DIR")
-                .unwrap_or_else(|_| {
-                    // Default to the parent of the Tantra directory
-                    let current = std::env::current_dir().unwrap_or_default();
-                    current.to_string_lossy().to_string()
-                }),
+            project_dir: std::env::var("TANTRA_PROJECT_DIR").unwrap_or_else(|_| {
+                // Default to the parent of the Tantra directory
+                let current = std::env::current_dir().unwrap_or_default();
+                current.to_string_lossy().to_string()
+            }),
             openhands_path: std::env::var("OPENHANDS_PATH")
                 .unwrap_or_else(|_| "openhands".to_string()),
             cargo_args: vec!["--workspace".to_string()],
@@ -188,7 +187,11 @@ pub async fn delegate_to_openhands(plan: &str, config: &EngLoopConfig) -> Result
         return Err(combined);
     }
 
-    Ok(format!("{}\n{}", truncate(&stdout, 4000), truncate(&stderr, 1000)))
+    Ok(format!(
+        "{}\n{}",
+        truncate(&stdout, 4000),
+        truncate(&stderr, 1000)
+    ))
 }
 
 // ── Test Phase ───────────────────────────────────────────────────────────────
@@ -225,7 +228,10 @@ pub async fn run_cargo_check(config: &EngLoopConfig) -> Result<String, String> {
 
 /// Run cargo test on the project.
 #[allow(dead_code)]
-pub async fn run_cargo_test(config: &EngLoopConfig, test_filter: Option<&str>) -> Result<String, String> {
+pub async fn run_cargo_test(
+    config: &EngLoopConfig,
+    test_filter: Option<&str>,
+) -> Result<String, String> {
     let mut cmd = tokio::process::Command::new("cargo");
     cmd.arg("test");
     if let Some(filter) = test_filter {
@@ -247,7 +253,8 @@ pub async fn run_cargo_test(config: &EngLoopConfig, test_filter: Option<&str>) -
 
     if !output.status.success() {
         // Extract test failure summary
-        let failures = stdout.lines()
+        let failures = stdout
+            .lines()
             .filter(|l| l.contains("FAILED") || l.contains("panicked"))
             .collect::<Vec<_>>();
         let fail_summary = if failures.is_empty() {
@@ -265,7 +272,8 @@ pub async fn run_cargo_test(config: &EngLoopConfig, test_filter: Option<&str>) -
     }
 
     // Extract test result summary
-    let summary = stdout.lines()
+    let summary = stdout
+        .lines()
         .filter(|l| l.contains("test result") || l.contains("running"))
         .collect::<Vec<_>>()
         .join("\n");
@@ -350,7 +358,10 @@ pub async fn run_engineering_loop(
     config: &EngLoopConfig,
 ) -> Result<EngLoopRun, String> {
     let mut run = EngLoopRun::new(task.to_string(), max_iterations);
-    println!("\n  ⚙️  Engineering Loop — iteration {}/{}\n", 1, max_iterations);
+    println!(
+        "\n  ⚙️  Engineering Loop — iteration {}/{}\n",
+        1, max_iterations
+    );
 
     // Phase 1: Plan
     println!("  📋 [Plan] Researching and planning...");
@@ -403,9 +414,15 @@ pub async fn run_engineering_loop(
     // Phase 4: Review
     println!("  👁️  [Review] Analyzing results...");
     let trunc = |s: &Option<String>| -> String {
-        s.as_ref().map(|s| {
-            if s.len() > 100 { format!("{}...", &s[..100]) } else { s.clone() }
-        }).unwrap_or_else(|| "N/A".to_string())
+        s.as_ref()
+            .map(|s| {
+                if s.len() > 100 {
+                    format!("{}...", &s[..100])
+                } else {
+                    s.clone()
+                }
+            })
+            .unwrap_or_else(|| "N/A".to_string())
     };
     let review = format!(
         "Plan: {}\nCode: {}\nTest: {}",
@@ -454,7 +471,14 @@ pub async fn run_engineering_loop(
     println!("  📊 Engineering Loop Summary");
     println!("  ═══════════════════════════════════════");
     println!("  Task:       {}", task);
-    println!("  Status:     {}", if all_passed { "✅ ALL PASSED" } else { "⚠️  PARTIAL" });
+    println!(
+        "  Status:     {}",
+        if all_passed {
+            "✅ ALL PASSED"
+        } else {
+            "⚠️  PARTIAL"
+        }
+    );
     println!("  Duration:   {} steps", run.steps.len());
     for (i, step) in run.steps.iter().enumerate() {
         let icon = if step.success { "✅" } else { "❌" };

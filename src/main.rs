@@ -39,7 +39,11 @@ struct TierBreakdown {
 use serde::Deserialize;
 
 #[derive(Parser)]
-#[command(name = "tantra", version = "0.2.0", about = "🧠 Tantra — Engineering Loop Orchestrator")]
+#[command(
+    name = "tantra",
+    version = "0.2.0",
+    about = "🧠 Tantra — Engineering Loop Orchestrator"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -86,9 +90,10 @@ async fn main() {
         Commands::Health => cmd_health().await,
         Commands::Test => cmd_test().await,
         Commands::Search { query } => cmd_search(&query.join(" ")).await,
-        Commands::EngLoop { task, max_iterations } => {
-            cmd_eng_loop(&task.join(" "), *max_iterations).await
-        }
+        Commands::EngLoop {
+            task,
+            max_iterations,
+        } => cmd_eng_loop(&task.join(" "), *max_iterations).await,
         Commands::Plan { task } => cmd_plan(&task.join(" ")).await,
         Commands::SeedDesign => cmd_seed_design().await,
         Commands::CheckOpenHands => cmd_check_openhands(),
@@ -112,7 +117,10 @@ fn cmd_check_openhands() {
         }
         Ok(output) => {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            println!("  ❌ OpenHands found but returned error:\n     {}", stderr.trim());
+            println!(
+                "  ❌ OpenHands found but returned error:\n     {}",
+                stderr.trim()
+            );
         }
         Err(e) => {
             println!("  ❌ OpenHands not available: {}", e);
@@ -215,7 +223,11 @@ async fn cmd_status() {
             for (name, tier) in &stats.tier_breakdown {
                 println!(
                     "    • {} [{}] — {} records, importance {:.2}, {} accesses",
-                    name, tier.tier, tier.total_records, tier.average_importance, tier.total_accesses
+                    name,
+                    tier.tier,
+                    tier.total_records,
+                    tier.average_importance,
+                    tier.total_accesses
                 );
             }
         }
@@ -246,7 +258,14 @@ async fn cmd_health() {
             }
             // Also show Tantra's own status
             println!("\n  Tantra:");
-            println!("    OpenHands: {}", if check_openhands_available() { "✅ Available" } else { "❌ Not found" });
+            println!(
+                "    OpenHands: {}",
+                if check_openhands_available() {
+                    "✅ Available"
+                } else {
+                    "❌ Not found"
+                }
+            );
         }
         Err(e) => eprintln!("  ❌ {}", e),
     }
@@ -344,17 +363,14 @@ async fn cmd_test() {
     }
 
     println!("\n  ✅ All integration tests passed!\n");
-}async fn cmd_search(query: &str) {
+}
+async fn cmd_search(query: &str) {
     let base_url = get_base_url();
     let client = reqwest::Client::new();
 
     println!("  🔍 Searching for: '{}'\n", query);
     let url = format!("{}/search/smart", base_url);
-    let resp = client
-        .get(&url)
-        .query(&[("q", query)])
-        .send()
-        .await;
+    let resp = client.get(&url).query(&[("q", query)]).send().await;
 
     match resp {
         Ok(r) => {
@@ -373,10 +389,7 @@ async fn cmd_test() {
                         let content = r["record"]["content"].as_str().unwrap_or("?");
                         let ct = r["record"]["content_type"].as_str().unwrap_or("?");
                         println!("  {}. [{}] (score: {:.2})", i + 1, ct, score);
-                        println!(
-                            "     {}",
-                            &content.chars().take(120).collect::<String>()
-                        );
+                        println!("     {}", &content.chars().take(120).collect::<String>());
                         println!();
                     }
                 }
