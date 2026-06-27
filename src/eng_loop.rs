@@ -224,6 +224,7 @@ pub async fn run_cargo_check(config: &EngLoopConfig) -> Result<String, String> {
 }
 
 /// Run cargo test on the project.
+#[allow(dead_code)]
 pub async fn run_cargo_test(config: &EngLoopConfig, test_filter: Option<&str>) -> Result<String, String> {
     let mut cmd = tokio::process::Command::new("cargo");
     cmd.arg("test");
@@ -315,6 +316,7 @@ pub async fn store_lesson(
 }
 
 /// Search memory for past engineering lessons.
+#[allow(dead_code)]
 pub async fn search_lessons(
     query: &str,
     config: &EngLoopConfig,
