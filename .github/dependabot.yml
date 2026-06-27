@@ -1,5 +1,8 @@
 # Dependabot — Automated Dependency Updates
 # Docs: https://docs.github.com/en/code-security/dependabot
+#
+# Tantra has ~8 direct dependencies. We restrict to minor+patch updates
+# because major version bumps often require code changes.
 
 version: 2
 updates:
@@ -10,7 +13,7 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "America/New_York"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "rust"
@@ -24,3 +27,7 @@ updates:
           - "patch"
         patterns:
           - "*"
+    ignore:
+      # reqwent 0.13+ changes the query() API — needs code update
+      - dependency-name: "reqwest"
+        versions: [">=0.13"]
